@@ -1,0 +1,2130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Philomath Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: #0a0a0f;
+        min-height: 100vh;
+        color: #fff;
+      }
+
+      /* Layout */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 220px;
+        background: #0d0d12;
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 24px 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .logo {
+        padding: 0 24px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        margin-bottom: 24px;
+      }
+      .logo h1 {
+        font-size: 18px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.7));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .logo span {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .nav {
+        flex: 1;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 24px;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+      }
+      .nav-item:hover {
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .nav-item.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+        border-left-color: #00d4aa;
+      }
+      .nav-item .icon {
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
+      }
+      .nav-section {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: rgba(255, 255, 255, 0.3);
+        padding: 20px 24px 8px;
+      }
+      .sidebar-footer {
+        padding: 16px 24px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .settings-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .settings-link:hover {
+        color: #fff;
+      }
+
+      .main {
+        margin-left: 220px;
+        padding: 32px;
+        min-height: 100vh;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+      .header h2 {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .header-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .refresh-btn,
+      .save-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .save-btn {
+        background: linear-gradient(135deg, #00d4aa, #00b894);
+        border: none;
+        color: #000;
+        font-weight: 600;
+      }
+      .last-updated {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Section */
+      .section {
+        margin-bottom: 40px;
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .section-title .icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+
+      /* Metrics Grid */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
+      .metric-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        transition: all 0.2s;
+      }
+      .metric-card:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .metric-card.editable {
+        cursor: pointer;
+      }
+      .metric-card.editable:hover::after {
+        content: "✎";
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.3);
+      }
+      .metric-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .metric-value {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        font-family: "DM Sans", sans-serif;
+      }
+      .metric-value.empty {
+        color: rgba(255, 255, 255, 0.2);
+      }
+      .metric-velocity {
+        font-size: 12px;
+        font-family: "DM Mono", monospace;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .metric-velocity.positive {
+        color: #00d4aa;
+      }
+      .metric-velocity.negative {
+        color: #ff4757;
+      }
+      .metric-velocity.neutral {
+        color: rgba(255, 255, 255, 0.3);
+      }
+      .metric-source {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.3);
+        margin-top: 8px;
+      }
+      .mini-chart {
+        height: 40px;
+        margin-top: 12px;
+      }
+
+      /* Chart Card */
+      .chart-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        margin-top: 16px;
+      }
+      .chart-card h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      .chart-container {
+        height: 200px;
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: #14141a;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 100%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-header h3 {
+        font-size: 18px;
+      }
+      .modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+      }
+      .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      /* Forms */
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-label {
+        display: block;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+        font-size: 14px;
+        font-family: "DM Mono", monospace;
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: #00d4aa;
+      }
+      .form-hint {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 6px;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+      .btn-secondary {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .btn-primary {
+        border: none;
+        background: #00d4aa;
+        color: #000;
+        font-weight: 600;
+      }
+      .btn-danger {
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        background: rgba(255, 71, 87, 0.1);
+        color: #ff4757;
+      }
+
+      /* Status */
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .status-dot.connected {
+        background: #00d4aa;
+        box-shadow: 0 0 8px #00d4aa;
+      }
+      .status-dot.disconnected {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .status-dot.error {
+        background: #ff4757;
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 4px;
+        border-radius: 8px;
+        width: fit-content;
+      }
+      .tab {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .tab.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+
+      /* Alert */
+      .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+      .alert.success {
+        background: rgba(0, 212, 170, 0.1);
+        border: 1px solid rgba(0, 212, 170, 0.2);
+        color: #00d4aa;
+      }
+      .alert.warning {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+      }
+      .alert.error {
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.2);
+        color: #ff4757;
+      }
+
+      /* Loading */
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #00d4aa;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Trends Section */
+      .trends-controls {
+        margin-bottom: 24px;
+      }
+      .time-range-tabs {
+        display: flex;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 4px;
+        border-radius: 10px;
+        width: fit-content;
+        margin-bottom: 12px;
+      }
+      .time-tab {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+      .time-tab:hover {
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .time-tab.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+      .custom-range {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .date-input {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+        font-size: 14px;
+        font-family: inherit;
+      }
+      .date-input:focus {
+        outline: none;
+        border-color: #00d4aa;
+      }
+
+      .trends-group {
+        margin-bottom: 32px;
+      }
+      .trends-group-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 16px;
+      }
+      .trends-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+      }
+      .trend-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .trend-card-wide {
+        grid-column: span 2;
+      }
+      @media (max-width: 768px) {
+        .trend-card-wide {
+          grid-column: span 1;
+        }
+      }
+      .trend-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .trend-title {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 500;
+      }
+      .trend-current {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .trend-chart {
+        height: 150px;
+        margin-bottom: 12px;
+      }
+      .trend-chart-tall {
+        height: 200px;
+      }
+      .trend-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .trend-change {
+        font-size: 13px;
+        font-family: "DM Mono", monospace;
+      }
+      .trend-change.positive {
+        color: #00d4aa;
+      }
+      .trend-change.negative {
+        color: #ff4757;
+      }
+      .trend-change.neutral {
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .trend-period {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .no-data-message {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .no-data-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+      .no-data-message h4 {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 8px;
+      }
+      .no-data-message p {
+        font-size: 14px;
+      }
+
+      /* Connection list */
+      .connection-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      .connection-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .connection-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+      .connection-name {
+        font-weight: 500;
+      }
+      .connection-status {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">
+        <h1>Philomath</h1>
+        <span>Dashboard</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-section">Overview</div>
+        <div class="nav-item active" data-section="overview">
+          <span class="icon">📊</span> Dashboard
+        </div>
+
+        <div class="nav-section">Metrics</div>
+        <div class="nav-item" data-section="growth">
+          <span class="icon">📈</span> Growth
+        </div>
+        <div class="nav-item" data-section="revenue">
+          <span class="icon">💰</span> Revenue
+        </div>
+        <div class="nav-item" data-section="funnel">
+          <span class="icon">🎯</span> Funnel
+        </div>
+        <div class="nav-item" data-section="retention">
+          <span class="icon">🔄</span> Retention
+        </div>
+        <div class="nav-item" data-section="engagement">
+          <span class="icon">💬</span> Engagement
+        </div>
+        <div class="nav-item" data-section="trends">
+          <span class="icon">📉</span> Trends
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="settings-link" onclick="openSettings()">
+          <span>⚙️</span> Settings
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <div class="header">
+        <div>
+          <h2>Dashboard</h2>
+          <div class="last-updated" id="lastUpdated">Last updated: Never</div>
+        </div>
+        <div class="header-actions">
+          <button class="refresh-btn" onclick="refreshData()">
+            <span id="refreshIcon">🔄</span> Refresh
+          </button>
+          <button class="save-btn" onclick="saveSnapshot()">
+            💾 Save Snapshot
+          </button>
+        </div>
+      </div>
+
+      <!-- Overview Section -->
+      <div id="content">
+        <!-- Growth Section -->
+        <div class="section" id="section-growth">
+          <div class="section-header">
+            <div class="section-title">
+              <div
+                class="icon"
+                style="background: rgba(0, 212, 170, 0.15); color: #00d4aa"
+              >
+                📈
+              </div>
+              Growth
+            </div>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card" data-metric="yt_subs">
+              <div class="metric-label">YouTube Subs</div>
+              <div class="metric-value" id="val-yt_subs">—</div>
+              <div class="metric-velocity neutral" id="vel-yt_subs">
+                No history
+              </div>
+              <div class="metric-source">🔗 YouTube API</div>
+              <div class="mini-chart"><canvas id="chart-yt_subs"></canvas></div>
+            </div>
+            <div class="metric-card" data-metric="mailchimp_contacts">
+              <div class="metric-label">Mailchimp Contacts</div>
+              <div class="metric-value" id="val-mailchimp_contacts">—</div>
+              <div class="metric-velocity neutral" id="vel-mailchimp_contacts">
+                No history
+              </div>
+              <div class="metric-source">🔗 Mailchimp API</div>
+              <div class="mini-chart">
+                <canvas id="chart-mailchimp_contacts"></canvas>
+              </div>
+            </div>
+            <div class="metric-card" data-metric="philomath_subs">
+              <div class="metric-label">Philomath Subs</div>
+              <div class="metric-value" id="val-philomath_subs">—</div>
+              <div class="metric-velocity neutral" id="vel-philomath_subs">
+                No history
+              </div>
+              <div class="metric-source">🔗 Memberful API</div>
+              <div class="mini-chart">
+                <canvas id="chart-philomath_subs"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revenue Section -->
+        <div class="section" id="section-revenue">
+          <div class="section-header">
+            <div class="section-title">
+              <div
+                class="icon"
+                style="background: rgba(255, 193, 7, 0.15); color: #ffc107"
+              >
+                💰
+              </div>
+              Revenue
+            </div>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card" data-metric="mrr">
+              <div class="metric-label">MRR</div>
+              <div class="metric-value" id="val-mrr">—</div>
+              <div class="metric-velocity neutral" id="vel-mrr">No history</div>
+              <div class="metric-source">🔗 Memberful API</div>
+              <div class="mini-chart"><canvas id="chart-mrr"></canvas></div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="mrr_by_instructor"
+              onclick="editMetric('mrr_by_instructor')"
+            >
+              <div class="metric-label">MRR by Instructor</div>
+              <div class="metric-value" id="val-mrr_by_instructor">—</div>
+              <div class="metric-velocity neutral" id="vel-mrr_by_instructor">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual</div>
+            </div>
+            <div class="metric-card" data-metric="arpu">
+              <div class="metric-label">ARPU</div>
+              <div class="metric-value" id="val-arpu">—</div>
+              <div class="metric-velocity neutral" id="vel-arpu">
+                No history
+              </div>
+              <div class="metric-source">📊 Calculated</div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="ltv"
+              onclick="editMetric('ltv')"
+            >
+              <div class="metric-label">LTV</div>
+              <div class="metric-value" id="val-ltv">—</div>
+              <div class="metric-velocity neutral" id="vel-ltv">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual</div>
+            </div>
+            <div class="metric-card" data-metric="net_mrr_growth">
+              <div class="metric-label">Net MRR Growth</div>
+              <div class="metric-value" id="val-net_mrr_growth">—</div>
+              <div class="metric-velocity neutral" id="vel-net_mrr_growth">
+                No history
+              </div>
+              <div class="metric-source">📊 Calculated</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Funnel Section -->
+        <div class="section" id="section-funnel">
+          <div class="section-header">
+            <div class="section-title">
+              <div
+                class="icon"
+                style="background: rgba(88, 101, 242, 0.15); color: #5865f2"
+              >
+                🎯
+              </div>
+              Funnel
+            </div>
+          </div>
+          <div class="metrics-grid">
+            <div
+              class="metric-card editable"
+              data-metric="yt_to_mailchimp"
+              onclick="editMetric('yt_to_mailchimp')"
+            >
+              <div class="metric-label">YT → Mailchimp</div>
+              <div class="metric-value" id="val-yt_to_mailchimp">—</div>
+              <div class="metric-velocity neutral" id="vel-yt_to_mailchimp">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual (UTM later)</div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="mailchimp_to_philomath"
+              onclick="editMetric('mailchimp_to_philomath')"
+            >
+              <div class="metric-label">Mailchimp → Philomath</div>
+              <div class="metric-value" id="val-mailchimp_to_philomath">—</div>
+              <div
+                class="metric-velocity neutral"
+                id="vel-mailchimp_to_philomath"
+              >
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual (UTM later)</div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="direct_conversions"
+              onclick="editMetric('direct_conversions')"
+            >
+              <div class="metric-label">Direct Conversions</div>
+              <div class="metric-value" id="val-direct_conversions">—</div>
+              <div class="metric-velocity neutral" id="vel-direct_conversions">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual (UTM later)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Retention Section -->
+        <div class="section" id="section-retention">
+          <div class="section-header">
+            <div class="section-title">
+              <div
+                class="icon"
+                style="background: rgba(255, 71, 87, 0.15); color: #ff4757"
+              >
+                🔄
+              </div>
+              Retention
+            </div>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card" data-metric="monthly_churn">
+              <div class="metric-label">Monthly Churn</div>
+              <div class="metric-value" id="val-monthly_churn">—</div>
+              <div class="metric-velocity neutral" id="vel-monthly_churn">
+                No history
+              </div>
+              <div class="metric-source">📊 Calculated</div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="day7_retention"
+              onclick="editMetric('day7_retention')"
+            >
+              <div class="metric-label">Day 7 Retention</div>
+              <div class="metric-value" id="val-day7_retention">—</div>
+              <div class="metric-velocity neutral" id="vel-day7_retention">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual</div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="day30_retention"
+              onclick="editMetric('day30_retention')"
+            >
+              <div class="metric-label">Day 30 Retention</div>
+              <div class="metric-value" id="val-day30_retention">—</div>
+              <div class="metric-velocity neutral" id="vel-day30_retention">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual</div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="day90_retention"
+              onclick="editMetric('day90_retention')"
+            >
+              <div class="metric-label">Day 90 Retention</div>
+              <div class="metric-value" id="val-day90_retention">—</div>
+              <div class="metric-velocity neutral" id="vel-day90_retention">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Engagement Section -->
+        <div class="section" id="section-engagement">
+          <div class="section-header">
+            <div class="section-title">
+              <div
+                class="icon"
+                style="background: rgba(0, 212, 170, 0.15); color: #00d4aa"
+              >
+                💬
+              </div>
+              Engagement
+            </div>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card" data-metric="discord_online">
+              <div class="metric-label">Discord Online</div>
+              <div class="metric-value" id="val-discord_online">—</div>
+              <div class="metric-velocity neutral" id="vel-discord_online">
+                No history
+              </div>
+              <div class="metric-source">🔗 Discord API</div>
+              <div class="mini-chart">
+                <canvas id="chart-discord_online"></canvas>
+              </div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="live_attendance"
+              onclick="editMetric('live_attendance')"
+            >
+              <div class="metric-label">Live Attendance</div>
+              <div class="metric-value" id="val-live_attendance">—</div>
+              <div class="metric-velocity neutral" id="vel-live_attendance">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual</div>
+            </div>
+            <div
+              class="metric-card editable"
+              data-metric="active_members_7d"
+              onclick="editMetric('active_members_7d')"
+            >
+              <div class="metric-label">Active Members (7d)</div>
+              <div class="metric-value" id="val-active_members_7d">—</div>
+              <div class="metric-velocity neutral" id="vel-active_members_7d">
+                Manual entry
+              </div>
+              <div class="metric-source">✏️ Manual</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trends Section -->
+        <div class="section" id="section-trends" style="display: none">
+          <div class="section-header">
+            <div class="section-title">
+              <div
+                class="icon"
+                style="background: rgba(88, 101, 242, 0.15); color: #5865f2"
+              >
+                📉
+              </div>
+              Trends
+            </div>
+          </div>
+
+          <!-- Time Range Controls -->
+          <div class="trends-controls">
+            <div class="time-range-tabs">
+              <button class="time-tab active" data-range="7">7D</button>
+              <button class="time-tab" data-range="14">14D</button>
+              <button class="time-tab" data-range="30">30D</button>
+              <button class="time-tab" data-range="90">90D</button>
+              <button class="time-tab" data-range="180">6M</button>
+              <button class="time-tab" data-range="365">1Y</button>
+              <button class="time-tab" data-range="all">All</button>
+              <button class="time-tab" data-range="custom">Custom</button>
+            </div>
+            <div class="custom-range" id="customRange" style="display: none">
+              <input type="date" id="startDate" class="date-input" />
+              <span style="color: rgba(255, 255, 255, 0.4)">to</span>
+              <input type="date" id="endDate" class="date-input" />
+              <button class="btn btn-secondary" onclick="applyCustomRange()">
+                Apply
+              </button>
+            </div>
+          </div>
+
+          <!-- Growth Charts -->
+          <div class="trends-group">
+            <h3 class="trends-group-title">📈 Growth</h3>
+            <div class="trends-grid">
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">YouTube Subscribers</span>
+                  <span class="trend-current" id="trend-val-yt_subs">—</span>
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-yt_subs"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-yt_subs">—</span>
+                  <span class="trend-period" id="trend-period-yt_subs">—</span>
+                </div>
+              </div>
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Mailchimp Contacts</span>
+                  <span class="trend-current" id="trend-val-mailchimp_contacts"
+                    >—</span
+                  >
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-mailchimp_contacts"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span
+                    class="trend-change"
+                    id="trend-change-mailchimp_contacts"
+                    >—</span
+                  >
+                  <span
+                    class="trend-period"
+                    id="trend-period-mailchimp_contacts"
+                    >—</span
+                  >
+                </div>
+              </div>
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Philomath Subscribers</span>
+                  <span class="trend-current" id="trend-val-philomath_subs"
+                    >—</span
+                  >
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-philomath_subs"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-philomath_subs"
+                    >—</span
+                  >
+                  <span class="trend-period" id="trend-period-philomath_subs"
+                    >—</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue Charts -->
+          <div class="trends-group">
+            <h3 class="trends-group-title">💰 Revenue</h3>
+            <div class="trends-grid">
+              <div class="trend-card trend-card-wide">
+                <div class="trend-header">
+                  <span class="trend-title"
+                    >Monthly Recurring Revenue (MRR)</span
+                  >
+                  <span class="trend-current" id="trend-val-mrr">—</span>
+                </div>
+                <div class="trend-chart trend-chart-tall">
+                  <canvas id="trend-chart-mrr"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-mrr">—</span>
+                  <span class="trend-period" id="trend-period-mrr">—</span>
+                </div>
+              </div>
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">ARPU</span>
+                  <span class="trend-current" id="trend-val-arpu">—</span>
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-arpu"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-arpu">—</span>
+                  <span class="trend-period" id="trend-period-arpu">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Engagement Charts -->
+          <div class="trends-group">
+            <h3 class="trends-group-title">💬 Engagement</h3>
+            <div class="trends-grid">
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Discord Online</span>
+                  <span class="trend-current" id="trend-val-discord_online"
+                    >—</span
+                  >
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-discord_online"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-discord_online"
+                    >—</span
+                  >
+                  <span class="trend-period" id="trend-period-discord_online"
+                    >—</span
+                  >
+                </div>
+              </div>
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Live Attendance</span>
+                  <span class="trend-current" id="trend-val-live_attendance"
+                    >—</span
+                  >
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-live_attendance"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-live_attendance"
+                    >—</span
+                  >
+                  <span class="trend-period" id="trend-period-live_attendance"
+                    >—</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Data Message -->
+          <div class="no-data-message" id="noTrendsData" style="display: none">
+            <div class="no-data-icon">📊</div>
+            <h4>No historical data yet</h4>
+            <p>Click "Save Snapshot" daily to build up your trends data.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+      <div class="modal" style="max-width: 600px">
+        <div class="modal-header">
+          <h3>Settings</h3>
+          <button class="modal-close" onclick="closeSettings()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="tabs">
+            <button class="tab active" onclick="setSettingsTab('connections')">
+              Connections
+            </button>
+            <button class="tab" onclick="setSettingsTab('proxy')">
+              Proxy Setup
+            </button>
+          </div>
+
+          <div id="settings-connections" class="settings-tab">
+            <div class="connection-item">
+              <div class="connection-info">
+                <div
+                  class="connection-icon"
+                  style="background: rgba(255, 0, 0, 0.15)"
+                >
+                  ▶
+                </div>
+                <div>
+                  <div class="connection-name">YouTube</div>
+                  <div class="connection-status" id="status-youtube">
+                    Not connected
+                  </div>
+                </div>
+              </div>
+              <button
+                class="btn btn-secondary"
+                onclick="configureConnection('youtube')"
+              >
+                Configure
+              </button>
+            </div>
+
+            <div class="connection-item">
+              <div class="connection-info">
+                <div
+                  class="connection-icon"
+                  style="background: rgba(255, 224, 27, 0.15)"
+                >
+                  ✉️
+                </div>
+                <div>
+                  <div class="connection-name">Mailchimp</div>
+                  <div class="connection-status" id="status-mailchimp">
+                    Not connected
+                  </div>
+                </div>
+              </div>
+              <button
+                class="btn btn-secondary"
+                onclick="configureConnection('mailchimp')"
+              >
+                Configure
+              </button>
+            </div>
+
+            <div class="connection-item">
+              <div class="connection-info">
+                <div
+                  class="connection-icon"
+                  style="background: rgba(0, 212, 170, 0.15)"
+                >
+                  ★
+                </div>
+                <div>
+                  <div class="connection-name">Memberful</div>
+                  <div class="connection-status" id="status-memberful">
+                    Not connected
+                  </div>
+                </div>
+              </div>
+              <button
+                class="btn btn-secondary"
+                onclick="configureConnection('memberful')"
+              >
+                Configure
+              </button>
+            </div>
+
+            <div class="connection-item">
+              <div class="connection-info">
+                <div
+                  class="connection-icon"
+                  style="background: rgba(88, 101, 242, 0.15)"
+                >
+                  💬
+                </div>
+                <div>
+                  <div class="connection-name">Discord</div>
+                  <div class="connection-status" id="status-discord">
+                    Not connected
+                  </div>
+                </div>
+              </div>
+              <button
+                class="btn btn-secondary"
+                onclick="configureConnection('discord')"
+              >
+                Configure
+              </button>
+            </div>
+          </div>
+
+          <div id="settings-proxy" class="settings-tab" style="display: none">
+            <div class="alert warning">
+              Required for Mailchimp, Memberful, and Discord APIs
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cloudflare Worker URL</label>
+              <input
+                type="text"
+                class="form-input"
+                id="proxyUrl"
+                placeholder="https://your-worker.workers.dev"
+              />
+              <div class="form-hint">
+                Deploy the Cloudflare Worker and paste the URL here
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveProxyUrl()">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connection Config Modal -->
+    <div class="modal-overlay" id="connectionModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="connectionModalTitle">Configure Connection</h3>
+          <button class="modal-close" onclick="closeConnectionModal()">
+            ×
+          </button>
+        </div>
+        <div class="modal-body" id="connectionModalBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeConnectionModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="saveConnection()">
+            Save & Test
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Metric Modal -->
+    <div class="modal-overlay" id="editModal">
+      <div class="modal" style="max-width: 400px">
+        <div class="modal-header">
+          <h3 id="editModalTitle">Edit Metric</h3>
+          <button class="modal-close" onclick="closeEditModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" id="editModalLabel">Value</label>
+            <input type="text" class="form-input" id="editModalInput" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeEditModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="saveMetricEdit()">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // =========================================================================
+      // STATE
+      // =========================================================================
+      const state = {
+        proxyUrl: localStorage.getItem("proxy_url") || "",
+        configs: JSON.parse(localStorage.getItem("api_configs") || "{}"),
+        currentData: {},
+        history: [],
+        activeConnection: null,
+        editingMetric: null,
+      };
+
+      const METRICS = {
+        yt_subs: { label: "YouTube Subs", format: "number", api: "youtube" },
+        mailchimp_contacts: {
+          label: "Mailchimp Contacts",
+          format: "number",
+          api: "mailchimp",
+        },
+        philomath_subs: {
+          label: "Philomath Subs",
+          format: "number",
+          api: "memberful",
+        },
+        mrr: { label: "MRR", format: "currency", api: "memberful" },
+        mrr_by_instructor: {
+          label: "MRR by Instructor",
+          format: "text",
+          manual: true,
+        },
+        arpu: { label: "ARPU", format: "currency", calculated: true },
+        ltv: { label: "LTV", format: "currency", manual: true },
+        net_mrr_growth: {
+          label: "Net MRR Growth",
+          format: "currency",
+          calculated: true,
+        },
+        yt_to_mailchimp: {
+          label: "YT → Mailchimp",
+          format: "percent",
+          manual: true,
+        },
+        mailchimp_to_philomath: {
+          label: "Mailchimp → Philomath",
+          format: "percent",
+          manual: true,
+        },
+        direct_conversions: {
+          label: "Direct Conversions",
+          format: "number",
+          manual: true,
+        },
+        monthly_churn: {
+          label: "Monthly Churn",
+          format: "percent",
+          calculated: true,
+        },
+        day7_retention: {
+          label: "Day 7 Retention",
+          format: "percent",
+          manual: true,
+        },
+        day30_retention: {
+          label: "Day 30 Retention",
+          format: "percent",
+          manual: true,
+        },
+        day90_retention: {
+          label: "Day 90 Retention",
+          format: "percent",
+          manual: true,
+        },
+        discord_online: {
+          label: "Discord Online",
+          format: "number",
+          api: "discord",
+        },
+        live_attendance: {
+          label: "Live Attendance",
+          format: "number",
+          manual: true,
+        },
+        active_members_7d: {
+          label: "Active Members (7d)",
+          format: "number",
+          manual: true,
+        },
+      };
+
+      const miniCharts = {};
+
+      // =========================================================================
+      // FORMATTING
+      // =========================================================================
+      function formatValue(value, format) {
+        if (value === null || value === undefined || value === "") return "—";
+        switch (format) {
+          case "currency":
+            return (
+              "$" +
+              Number(value).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })
+            );
+          case "percent":
+            return Number(value).toFixed(1) + "%";
+          case "number":
+            return Number(value).toLocaleString();
+          default:
+            return value;
+        }
+      }
+
+      function formatVelocity(current, previous, days = 7) {
+        if (!previous || !current)
+          return { text: "No history", class: "neutral" };
+        const diff = current - previous;
+        const perDay = diff / days;
+        const sign = diff >= 0 ? "+" : "";
+        return {
+          text: `${sign}${perDay.toFixed(1)}/day`,
+          class: diff >= 0 ? "positive" : "negative",
+        };
+      }
+
+      // =========================================================================
+      // API CALLS
+      // =========================================================================
+      async function fetchFromProxy(endpoint, body) {
+        if (!state.proxyUrl) throw new Error("Proxy URL not configured");
+        const response = await fetch(`${state.proxyUrl}${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
+      }
+
+      async function fetchYouTube() {
+        const response = await fetch("/api/youtube");
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
+      }
+
+      async function fetchMailchimp() {
+        const response = await fetch("/api/mailchimp");
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
+      }
+
+      async function fetchMemberful() {
+        const response = await fetch("/api/memberful");
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
+      }
+
+      async function fetchDiscord() {
+        const config = state.configs.discord;
+        if (!config?.botToken || !config?.guildId) return null;
+        return await fetchFromProxy("/api/discord", config);
+      }
+
+      async function fetchHistory() {
+        const response = await fetch("/api/history");
+        return await response.json();
+      }
+
+      async function saveToSheets(data) {
+        await fetch("/api/history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+      }
+
+      // =========================================================================
+      // DATA REFRESH
+      // =========================================================================
+      async function refreshData() {
+        const refreshIcon = document.getElementById("refreshIcon");
+        refreshIcon.innerHTML = '<span class="loading"></span>';
+
+        try {
+          // Fetch from APIs
+          const [youtube, mailchimp, memberful, discord] =
+            await Promise.allSettled([
+              fetchYouTube(),
+              fetchMailchimp(),
+              fetchMemberful(),
+              fetchDiscord(),
+            ]);
+
+          if (youtube.status === "fulfilled" && youtube.value) {
+            state.currentData.yt_subs = youtube.value.current;
+            updateConnectionStatus("youtube", "connected");
+          }
+
+          if (mailchimp.status === "fulfilled" && mailchimp.value) {
+            state.currentData.mailchimp_contacts = mailchimp.value.current;
+            updateConnectionStatus("mailchimp", "connected");
+          }
+
+          if (memberful.status === "fulfilled" && memberful.value) {
+            state.currentData.philomath_subs = memberful.value.current;
+            state.currentData.mrr = memberful.value.mrr;
+            updateConnectionStatus("memberful", "connected");
+          }
+
+          if (discord.status === "fulfilled" && discord.value) {
+            state.currentData.discord_online = discord.value.online;
+            updateConnectionStatus("discord", "connected");
+          }
+
+          // Calculate derived metrics
+          if (state.currentData.mrr && state.currentData.philomath_subs) {
+            state.currentData.arpu =
+              state.currentData.mrr / state.currentData.philomath_subs;
+          }
+
+          // Fetch history
+          state.history = await fetchHistory();
+
+          // Calculate velocity from history
+          if (state.history.length >= 2) {
+            const latest = state.history[state.history.length - 1];
+            const weekAgo =
+              state.history[Math.max(0, state.history.length - 8)];
+            // Calculate net MRR growth
+            if (latest.mrr && weekAgo.mrr) {
+              state.currentData.net_mrr_growth = latest.mrr - weekAgo.mrr;
+            }
+          }
+
+          // Add to refreshData() function
+          const retention = await fetch("/api/retention").then((r) => r.json());
+          if (retention) {
+            state.currentData.day7_retention = retention.day7_retention;
+            state.currentData.day30_retention = retention.day30_retention;
+            state.currentData.day90_retention = retention.day90_retention;
+            state.currentData.monthly_churn = retention.monthly_churn;
+          }
+          renderMetrics();
+          document.getElementById("lastUpdated").textContent =
+            `Last updated: ${new Date().toLocaleString()}`;
+        } catch (e) {
+          console.error("Refresh failed:", e);
+        }
+
+        refreshIcon.textContent = "🔄";
+      }
+
+      function updateConnectionStatus(platform, status) {
+        const el = document.getElementById(`status-${platform}`);
+        if (el) {
+          el.textContent =
+            status === "connected" ? "✓ Connected" : "Not connected";
+          el.style.color =
+            status === "connected" ? "#00D4AA" : "rgba(255,255,255,0.4)";
+        }
+      }
+
+      // =========================================================================
+      // RENDERING
+      // =========================================================================
+      function renderMetrics() {
+        Object.keys(METRICS).forEach((key) => {
+          const metric = METRICS[key];
+          const value = state.currentData[key];
+          const valEl = document.getElementById(`val-${key}`);
+          const velEl = document.getElementById(`vel-${key}`);
+
+          if (valEl) {
+            valEl.textContent = formatValue(value, metric.format);
+            valEl.classList.toggle("empty", !value && value !== 0);
+          }
+
+          if (velEl && state.history.length >= 2) {
+            const weekAgo =
+              state.history[Math.max(0, state.history.length - 8)];
+            const vel = formatVelocity(value, weekAgo[key]);
+            velEl.textContent = vel.text;
+            velEl.className = `metric-velocity ${vel.class}`;
+          }
+
+          // Render mini chart if we have history
+          renderMiniChart(key);
+        });
+      }
+
+      function renderMiniChart(metric) {
+        const canvas = document.getElementById(`chart-${metric}`);
+        if (!canvas || state.history.length < 2) return;
+
+        const data = state.history
+          .map((h) => h[metric])
+          .filter((v) => v !== null && v !== undefined && v !== "");
+        if (data.length < 2) return;
+
+        if (miniCharts[metric]) miniCharts[metric].destroy();
+
+        const color = data[data.length - 1] >= data[0] ? "#00D4AA" : "#FF4757";
+
+        miniCharts[metric] = new Chart(canvas, {
+          type: "line",
+          data: {
+            labels: data.map((_, i) => i),
+            datasets: [
+              {
+                data: data,
+                borderColor: color,
+                borderWidth: 2,
+                fill: true,
+                backgroundColor: color + "20",
+                tension: 0.4,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } },
+          },
+        });
+      }
+
+      // =========================================================================
+      // SAVE SNAPSHOT
+      // =========================================================================
+      async function saveSnapshot() {
+        const btn = document.querySelector(".save-btn");
+        btn.innerHTML = '<span class="loading"></span> Saving...';
+
+        await saveToSheets(state.currentData);
+
+        btn.innerHTML = "✓ Saved!";
+        setTimeout(() => {
+          btn.innerHTML = "💾 Save Snapshot";
+        }, 2000);
+      }
+
+      // =========================================================================
+      // SETTINGS
+      // =========================================================================
+      function openSettings() {
+        document.getElementById("settingsModal").classList.add("open");
+        document.getElementById("proxyUrl").value = state.proxyUrl;
+        updateAllConnectionStatuses();
+      }
+
+      function closeSettings() {
+        document.getElementById("settingsModal").classList.remove("open");
+      }
+
+      function setSettingsTab(tab) {
+        document
+          .querySelectorAll(".settings-tab")
+          .forEach((el) => (el.style.display = "none"));
+        document
+          .querySelectorAll(".tabs .tab")
+          .forEach((el) => el.classList.remove("active"));
+        document.getElementById(`settings-${tab}`).style.display = "block";
+        event.target.classList.add("active");
+      }
+
+      function saveProxyUrl() {
+        state.proxyUrl = document
+          .getElementById("proxyUrl")
+          .value.trim()
+          .replace(/\/$/, "");
+        localStorage.setItem("proxy_url", state.proxyUrl);
+        alert("Proxy URL saved!");
+      }
+
+      function updateAllConnectionStatuses() {
+        ["youtube", "mailchimp", "memberful", "discord"].forEach((platform) => {
+          const config = state.configs[platform];
+          const hasConfig = config && Object.values(config).some((v) => v);
+          updateConnectionStatus(
+            platform,
+            hasConfig ? "configured" : "disconnected",
+          );
+        });
+      }
+
+      // =========================================================================
+      // CONNECTION CONFIG
+      // =========================================================================
+      function configureConnection(platform) {
+        state.activeConnection = platform;
+        document.getElementById("connectionModalTitle").textContent =
+          `Configure ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+
+        const config = state.configs[platform] || {};
+        let html = "";
+
+        switch (platform) {
+          case "youtube":
+            html = `
+            <div class="alert success">Works directly in browser - no proxy needed!</div>
+            <div class="form-group">
+              <label class="form-label">API Key</label>
+              <input type="password" class="form-input" id="cfg-apiKey" value="${config.apiKey || ""}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Channel ID</label>
+              <input type="text" class="form-input" id="cfg-channelId" value="${config.channelId || ""}" placeholder="UCxxxxxxxxxx">
+            </div>
+          `;
+            break;
+          case "mailchimp":
+            html = `
+            <div class="form-group">
+              <label class="form-label">API Key</label>
+              <input type="password" class="form-input" id="cfg-apiKey" value="${config.apiKey || ""}">
+              <div class="form-hint">Format: abc123-us1 (the part after - is your server)</div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Server</label>
+                <input type="text" class="form-input" id="cfg-server" value="${config.server || ""}" placeholder="us1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">List ID</label>
+                <input type="text" class="form-input" id="cfg-listId" value="${config.listId || ""}">
+              </div>
+            </div>
+          `;
+            break;
+          case "memberful":
+            html = `
+            <div class="form-group">
+              <label class="form-label">API Key</label>
+              <input type="password" class="form-input" id="cfg-apiKey" value="${config.apiKey || ""}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Subdomain</label>
+              <input type="text" class="form-input" id="cfg-subdomain" value="${config.subdomain || ""}" placeholder="yoursite">
+              <div class="form-hint">From yoursite.memberful.com</div>
+            </div>
+          `;
+            break;
+          case "discord":
+            html = `
+            <div class="form-group">
+              <label class="form-label">Bot Token</label>
+              <input type="password" class="form-input" id="cfg-botToken" value="${config.botToken || ""}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Guild (Server) ID</label>
+              <input type="text" class="form-input" id="cfg-guildId" value="${config.guildId || ""}">
+            </div>
+          `;
+            break;
+        }
+
+        document.getElementById("connectionModalBody").innerHTML = html;
+        document.getElementById("connectionModal").classList.add("open");
+      }
+
+      function closeConnectionModal() {
+        document.getElementById("connectionModal").classList.remove("open");
+        state.activeConnection = null;
+      }
+
+      async function saveConnection() {
+        const platform = state.activeConnection;
+        const config = {};
+
+        document
+          .querySelectorAll("#connectionModalBody input")
+          .forEach((input) => {
+            const key = input.id.replace("cfg-", "");
+            config[key] = input.value;
+          });
+
+        state.configs[platform] = config;
+        localStorage.setItem("api_configs", JSON.stringify(state.configs));
+
+        closeConnectionModal();
+        updateAllConnectionStatuses();
+        await refreshData();
+      }
+
+      // =========================================================================
+      // EDIT METRIC
+      // =========================================================================
+      function editMetric(metric) {
+        state.editingMetric = metric;
+        const meta = METRICS[metric];
+        document.getElementById("editModalTitle").textContent =
+          `Edit ${meta.label}`;
+        document.getElementById("editModalLabel").textContent = meta.label;
+        document.getElementById("editModalInput").value =
+          state.currentData[metric] || "";
+        document.getElementById("editModal").classList.add("open");
+      }
+
+      function closeEditModal() {
+        document.getElementById("editModal").classList.remove("open");
+        state.editingMetric = null;
+      }
+
+      function saveMetricEdit() {
+        const value = document.getElementById("editModalInput").value;
+        state.currentData[state.editingMetric] = value;
+        renderMetrics();
+        closeEditModal();
+      }
+
+      // =========================================================================
+      // NAVIGATION
+      // =========================================================================
+      document.querySelectorAll(".nav-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          document
+            .querySelectorAll(".nav-item")
+            .forEach((i) => i.classList.remove("active"));
+          item.classList.add("active");
+
+          const section = item.dataset.section;
+          if (section === "overview") {
+            document
+              .querySelectorAll(".section")
+              .forEach((s) => (s.style.display = "block"));
+            document.getElementById("section-trends").style.display = "none";
+          } else {
+            document
+              .querySelectorAll(".section")
+              .forEach((s) => (s.style.display = "none"));
+            document.getElementById(`section-${section}`).style.display =
+              "block";
+          }
+
+          if (section === "trends") {
+            renderTrends();
+          }
+        });
+      });
+
+      // =========================================================================
+      // TRENDS
+      // =========================================================================
+      const trendCharts = {};
+      let currentRange = 7;
+      let customStartDate = null;
+      let customEndDate = null;
+
+      const TREND_METRICS = [
+        "yt_subs",
+        "mailchimp_contacts",
+        "philomath_subs",
+        "mrr",
+        "arpu",
+        "discord_online",
+        "live_attendance",
+      ];
+
+      // Time range tabs
+      document.querySelectorAll(".time-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".time-tab")
+            .forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+
+          const range = tab.dataset.range;
+          if (range === "custom") {
+            document.getElementById("customRange").style.display = "flex";
+          } else {
+            document.getElementById("customRange").style.display = "none";
+            currentRange = range === "all" ? "all" : parseInt(range);
+            customStartDate = null;
+            customEndDate = null;
+            renderTrends();
+          }
+        });
+      });
+
+      function applyCustomRange() {
+        const start = document.getElementById("startDate").value;
+        const end = document.getElementById("endDate").value;
+        if (start && end) {
+          customStartDate = new Date(start);
+          customEndDate = new Date(end);
+          currentRange = "custom";
+          renderTrends();
+        }
+      }
+
+      function filterHistoryByRange(history) {
+        if (!history || history.length === 0) return [];
+
+        let filtered = history
+          .map((row) => ({
+            ...row,
+            dateObj: new Date(row.date),
+          }))
+          .sort((a, b) => a.dateObj - b.dateObj);
+
+        if (currentRange === "custom" && customStartDate && customEndDate) {
+          filtered = filtered.filter(
+            (row) =>
+              row.dateObj >= customStartDate && row.dateObj <= customEndDate,
+          );
+        } else if (currentRange !== "all") {
+          const cutoff = new Date();
+          cutoff.setDate(cutoff.getDate() - currentRange);
+          filtered = filtered.filter((row) => row.dateObj >= cutoff);
+        }
+
+        return filtered;
+      }
+
+      function renderTrends() {
+        const filtered = filterHistoryByRange(state.history);
+
+        if (filtered.length < 2) {
+          document.getElementById("noTrendsData").style.display = "block";
+          document
+            .querySelectorAll(".trends-group")
+            .forEach((g) => (g.style.display = "none"));
+          return;
+        }
+
+        document.getElementById("noTrendsData").style.display = "none";
+        document
+          .querySelectorAll(".trends-group")
+          .forEach((g) => (g.style.display = "block"));
+
+        const periodLabel =
+          currentRange === "custom"
+            ? `${customStartDate.toLocaleDateString()} - ${customEndDate.toLocaleDateString()}`
+            : currentRange === "all"
+              ? "All time"
+              : `Last ${currentRange} days`;
+
+        TREND_METRICS.forEach((metric) => {
+          renderTrendChart(metric, filtered, periodLabel);
+        });
+      }
+
+      function renderTrendChart(metric, data, periodLabel) {
+        const canvas = document.getElementById(`trend-chart-${metric}`);
+        if (!canvas) return;
+
+        const values = data
+          .map((row) => ({
+            date: row.dateObj,
+            value: parseFloat(row[metric]) || null,
+          }))
+          .filter((d) => d.value !== null);
+
+        if (values.length < 2) {
+          // Hide this chart if no data
+          canvas.parentElement.parentElement.style.display = "none";
+          return;
+        }
+        canvas.parentElement.parentElement.style.display = "block";
+
+        const labels = values.map((d) =>
+          d.date.toLocaleDateString("default", {
+            month: "short",
+            day: "numeric",
+          }),
+        );
+        const chartData = values.map((d) => d.value);
+
+        const first = chartData[0];
+        const last = chartData[chartData.length - 1];
+        const change = last - first;
+        const changePercent =
+          first !== 0 ? ((change / first) * 100).toFixed(1) : 0;
+        const isPositive = change >= 0;
+        const color = isPositive ? "#00D4AA" : "#FF4757";
+
+        // Update current value
+        const meta = METRICS[metric];
+        const valEl = document.getElementById(`trend-val-${metric}`);
+        if (valEl)
+          valEl.textContent = formatValue(last, meta?.format || "number");
+
+        // Update change
+        const changeEl = document.getElementById(`trend-change-${metric}`);
+        if (changeEl) {
+          const sign = isPositive ? "+" : "";
+          changeEl.textContent = `${sign}${formatValue(change, meta?.format || "number")} (${sign}${changePercent}%)`;
+          changeEl.className = `trend-change ${isPositive ? "positive" : "negative"}`;
+        }
+
+        // Update period
+        const periodEl = document.getElementById(`trend-period-${metric}`);
+        if (periodEl) periodEl.textContent = periodLabel;
+
+        // Destroy existing chart
+        if (trendCharts[metric]) trendCharts[metric].destroy();
+
+        // Create chart
+        trendCharts[metric] = new Chart(canvas, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                data: chartData,
+                borderColor: color,
+                borderWidth: 2,
+                fill: true,
+                backgroundColor: color + "15",
+                tension: 0.4,
+                pointRadius: values.length > 30 ? 0 : 3,
+                pointHoverRadius: 6,
+                pointBackgroundColor: color,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "rgba(15,15,20,0.95)",
+                titleColor: "rgba(255,255,255,0.6)",
+                bodyColor: "#fff",
+                bodyFont: { size: 16, weight: 600 },
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false,
+                callbacks: {
+                  label: function (context) {
+                    return formatValue(context.raw, meta?.format || "number");
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: {
+                  color: "rgba(255,255,255,0.4)",
+                  maxTicksLimit: 8,
+                },
+              },
+              y: {
+                grid: { color: "rgba(255,255,255,0.05)" },
+                ticks: {
+                  color: "rgba(255,255,255,0.4)",
+                  callback: function (value) {
+                    return formatValue(value, meta?.format || "number");
+                  },
+                },
+              },
+            },
+            interaction: {
+              intersect: false,
+              mode: "index",
+            },
+          },
+        });
+      }
+
+      // =========================================================================
+      // INIT
+      // =========================================================================
+      refreshData();
+    </script>
+  </body>
+</html>
