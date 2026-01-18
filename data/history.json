@@ -25,5 +25,23 @@
     "day30_retention": 0,
     "day90_retention": 0,
     "monthly_churn": "0.0"
+  },
+  {
+    "date": "2026-01-18T16:41:11.892Z",
+    "yt_subs": 2430,
+    "mailchimp_contacts": 8491,
+    "philomath_subs": 28,
+    "mrr": 978,
+    "ltv": 23801,
+    "discord_online": 91,
+    "discord_total": 1148,
+    "discord_new_7d": null,
+    "discord_messages_7d": null,
+    "active_members_7d": null,
+    "arpu": 34.92857142857143,
+    "day7_retention": 0,
+    "day30_retention": 0,
+    "day90_retention": 0,
+    "monthly_churn": "0.0"
   }
 ]
