@@ -642,6 +642,19 @@
         color: rgba(255, 255, 255, 0.4);
       }
     </style>
+    <!-- Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-J5VZDEHTB7"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-XXXXXXXXXX");
+    </script>
   </head>
   <body>
     <!-- Sidebar -->
@@ -781,7 +794,7 @@
               <div class="metric-velocity neutral" id="vel-mrr_by_instructor">
                 Manual entry
               </div>
-              <div class="metric-source">✏️ Manual</div>
+              <div class="metric-source">📊 Calculated</div>
             </div>
             <div class="metric-card" data-metric="arpu">
               <div class="metric-label">ARPU</div>
@@ -791,11 +804,7 @@
               </div>
               <div class="metric-source">📊 Calculated</div>
             </div>
-            <div
-              class="metric-card editable"
-              data-metric="ltv"
-              onclick="editMetric('ltv')"
-            >
+            <div class="metric-card" data-metric="ltv">
               <div class="metric-label">LTV</div>
               <div class="metric-value" id="val-ltv">—</div>
               <div class="metric-velocity neutral" id="vel-ltv">
@@ -956,6 +965,37 @@
                 <canvas id="chart-discord_online"></canvas>
               </div>
             </div>
+
+            <div class="metric-card" data-metric="discord_total">
+              <div class="metric-label">Total Discord Members</div>
+              <div class="metric-value" id="val-discord_total">—</div>
+              <div class="metric-velocity neutral" id="vel-discord_total">
+                No history
+              </div>
+              <div class="metric-source">🔗 Discord API</div>
+              <div class="mini-chart">
+                <canvas id="chart-discord_total"></canvas>
+              </div>
+            </div>
+
+            <div class="metric-card" data-metric="discord_new_7d">
+              <div class="metric-label">New Members (7d)</div>
+              <div class="metric-value" id="val-discord_new_7d">—</div>
+              <div class="metric-velocity neutral" id="vel-discord_new_7d">
+                No history
+              </div>
+              <div class="metric-source">🔗 Discord Insights</div>
+            </div>
+
+            <div class="metric-card" data-metric="discord_messages_7d">
+              <div class="metric-label">Messages Sent (7d)</div>
+              <div class="metric-value" id="val-discord_messages_7d">—</div>
+              <div class="metric-velocity neutral" id="vel-discord_messages_7d">
+                No history
+              </div>
+              <div class="metric-source">🔗 Discord Insights</div>
+            </div>
+
             <div
               class="metric-card editable"
               data-metric="live_attendance"
@@ -968,6 +1008,7 @@
               </div>
               <div class="metric-source">✏️ Manual</div>
             </div>
+
             <div
               class="metric-card editable"
               data-metric="active_members_7d"
@@ -982,7 +1023,6 @@
             </div>
           </div>
         </div>
-
         <!-- Trends Section -->
         <div class="section" id="section-trends" style="display: none">
           <div class="section-header">
@@ -1383,7 +1423,7 @@
           manual: true,
         },
         arpu: { label: "ARPU", format: "currency", calculated: true },
-        ltv: { label: "LTV", format: "currency", manual: true },
+        ltv: { label: "LTV", format: "currency", calculated: true },
         net_mrr_growth: {
           label: "Net MRR Growth",
           format: "currency",
@@ -1438,6 +1478,21 @@
           label: "Active Members (7d)",
           format: "number",
           manual: true,
+        },
+        discord_total: {
+          label: "Discord Members",
+          format: "number",
+          api: "discord",
+        },
+        discord_new_7d: {
+          label: "New Members (7d)",
+          format: "number",
+          api: "discord",
+        },
+        discord_messages_7d: {
+          label: "Messages (7d)",
+          format: "number",
+          api: "discord",
         },
       };
 
@@ -1515,9 +1570,10 @@
       }
 
       async function fetchDiscord() {
-        const config = state.configs.discord;
-        if (!config?.botToken || !config?.guildId) return null;
-        return await fetchFromProxy("/api/discord", config);
+        const response = await fetch("/api/discord");
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
       }
 
       async function fetchHistory() {
@@ -1538,6 +1594,7 @@
       // =========================================================================
       async function refreshData() {
         const refreshIcon = document.getElementById("refreshIcon");
+
         refreshIcon.innerHTML = '<span class="loading"></span>';
 
         try {
@@ -1563,11 +1620,17 @@
           if (memberful.status === "fulfilled" && memberful.value) {
             state.currentData.philomath_subs = memberful.value.current;
             state.currentData.mrr = memberful.value.mrr;
+            state.currentData.ltv = memberful.value.ltv; // ⬅️ ADD THIS LINE
             updateConnectionStatus("memberful", "connected");
           }
 
           if (discord.status === "fulfilled" && discord.value) {
             state.currentData.discord_online = discord.value.online;
+            state.currentData.discord_total = discord.value.total_members;
+            state.currentData.discord_new_7d = discord.value.new_members_7d;
+            state.currentData.discord_messages_7d = discord.value.messages_7d;
+            state.currentData.active_members_7d =
+              discord.value.active_members_7d;
             updateConnectionStatus("discord", "connected");
           }
 

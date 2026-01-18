@@ -3,5 +3,27 @@
     "date": "2026-01-18T01:03:44.230Z",
     "yt_subs": 2420,
     "mailchimp_contacts": 8489
+  },
+  {
+    "date": "2026-01-18T03:37:11.435Z",
+    "yt_subs": 2430,
+    "mailchimp_contacts": 8490,
+    "day7_retention": "100.0",
+    "day30_retention": "100.0",
+    "day90_retention": "100.0",
+    "monthly_churn": "0.0"
+  },
+  {
+    "date": "2026-01-18T16:13:33.562Z",
+    "yt_subs": 2430,
+    "mailchimp_contacts": 8492,
+    "philomath_subs": 28,
+    "mrr": 978,
+    "ltv": 23801,
+    "arpu": 34.92857142857143,
+    "day7_retention": 0,
+    "day30_retention": 0,
+    "day90_retention": 0,
+    "monthly_churn": "0.0"
   }
 ]
