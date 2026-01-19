@@ -7,7 +7,24 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
+
+// Disable caching for API routes
+app.use("/api", (req, res, next) => {
+  res.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
+
+app.use(
+  express.static("public", {
+    etag: false,
+    maxAge: 0,
+  }),
+);
 
 const DATA_FILE = path.join(__dirname, "data", "history.json");
 
@@ -15,12 +32,16 @@ const DATA_FILE = path.join(__dirname, "data", "history.json");
 app.get("/api/youtube", async (req, res) => {
   try {
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${process.env.YOUTUBE_CHANNEL_ID}&key=${process.env.YOUTUBE_API_KEY}`,
+      `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${process.env.YOUTUBE_CHANNEL_ID}&key=${process.env.GOOGLE_API_KEY}`,
     );
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
+    const stats = data.items[0].statistics;
     res.json({
-      current: parseInt(data.items[0].statistics.subscriberCount),
+      current: parseInt(stats.subscriberCount),
+      subscribers: parseInt(stats.subscriberCount),
+      views: parseInt(stats.viewCount),
+      videos: parseInt(stats.videoCount),
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -81,27 +102,69 @@ app.get("/api/memberful", async (req, res) => {
     }
     const subs = data.data.subscriptions.edges;
     const active = subs.filter((s) => s.node.active);
-    const mrr = active.reduce(
-      (sum, s) => sum + parseFloat(s.node.plan.priceCents) / 100,
+
+    // Classify plan type
+    const getPlanType = (planName) => {
+      const name = planName.toLowerCase();
+      if (
+        name.includes("annual") ||
+        name.includes("yearly") ||
+        name.includes("year")
+      ) {
+        return "annual";
+      } else if (
+        name.includes("6-month") ||
+        name.includes("6 month") ||
+        name.includes("semi")
+      ) {
+        return "6month";
+      } else {
+        return "monthly";
+      }
+    };
+
+    // Get billing period in months based on plan type
+    const getBillingMonths = (planType) => {
+      if (planType === "annual") return 12;
+      if (planType === "6month") return 6;
+      return 1;
+    };
+
+    // Calculate MRR (normalize all plans to monthly)
+    const mrr = active.reduce((sum, s) => {
+      const planPrice = parseFloat(s.node.plan.priceCents) / 100;
+      const planType = getPlanType(s.node.plan.name);
+      const billingMonths = getBillingMonths(planType);
+      return sum + planPrice / billingMonths;
+    }, 0);
+
+    // LTV calculation using new formula:
+    // LTV = (monthly_count × 20 × monthly_price) + (6month_count × 6 × 6month_price) + (annual_count × 4 × annual_price)
+    const TYPICAL_MONTHS = 20;
+    const TYPICAL_HALF_YEAR = 6;
+    const TYPICAL_YEAR = 4;
+
+    // Group subscribers by plan type and get prices
+    const planGroups = { monthly: [], "6month": [], annual: [] };
+    active.forEach((s) => {
+      const planType = getPlanType(s.node.plan.name);
+      planGroups[planType].push(parseFloat(s.node.plan.priceCents) / 100);
+    });
+
+    // Calculate total LTV
+    const monthlyLtv = planGroups.monthly.reduce(
+      (sum, price) => sum + TYPICAL_MONTHS * price,
       0,
     );
-
-    // Calculate ARPU
-    const arpu = active.length > 0 ? mrr / active.length : 0;
-
-    // Calculate average subscription age in months
-    const avgLifespanMonths =
-      active.length > 0
-        ? active.reduce((sum, s) => {
-            const created = new Date(s.node.createdAt);
-            const monthsActive =
-              (Date.now() - created) / (1000 * 60 * 60 * 24 * 30);
-            return sum + monthsActive;
-          }, 0) / active.length
-        : 0;
-
-    // LTV = ARPU × Average Lifespan
-    const ltv = arpu * avgLifespanMonths;
+    const sixMonthLtv = planGroups["6month"].reduce(
+      (sum, price) => sum + TYPICAL_HALF_YEAR * price,
+      0,
+    );
+    const annualLtv = planGroups.annual.reduce(
+      (sum, price) => sum + TYPICAL_YEAR * price,
+      0,
+    );
+    const ltv = monthlyLtv + sixMonthLtv + annualLtv;
 
     res.json({
       current: active.length,
@@ -228,7 +291,7 @@ app.post("/api/history", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Dashboard running on port ${PORT}`);
 });
@@ -324,6 +387,54 @@ app.get("/api/retention", async (req, res) => {
     });
   } catch (error) {
     console.error("Retention API error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+const { JWT } = require("google-auth-library");
+
+// Google Analytics API
+app.get("/api/analytics", async (req, res) => {
+  try {
+    // Create JWT client
+    const client = new JWT({
+      email: process.env.GA_CLIENT_EMAIL,
+      key: process.env.GA_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+    });
+
+    // Get access token
+    const token = await client.authorize();
+
+    // Fetch GA data
+    const response = await fetch(
+      `https://analyticsdata.googleapis.com/v1beta/properties/${process.env.GA_PROPERTY_ID}:runReport`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+          metrics: [
+            { name: "activeUsers" },
+            { name: "sessions" },
+            { name: "screenPageViews" },
+          ],
+        }),
+      },
+    );
+
+    const data = await response.json();
+
+    res.json({
+      active_users_7d: parseInt(data.rows?.[0]?.metricValues[0]?.value || 0),
+      sessions_7d: parseInt(data.rows?.[0]?.metricValues[1]?.value || 0),
+      pageviews_7d: parseInt(data.rows?.[0]?.metricValues[2]?.value || 0),
+    });
+  } catch (error) {
+    console.error("GA API error:", error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -20,3 +20,15 @@ expertMode = true
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[userenv]
+
+[userenv.shared]
+MAILCHIMP_LIST_ID = "1b53ec2579"
+MAILCHIMP_SERVER = "us5"
+MEMBERFUL_SUBDOMAIN = "philomath"
+YOUTUBE_CHANNEL_ID = "UCdsFErajzvWxNqvuPXC7m4w"

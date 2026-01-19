@@ -673,6 +673,9 @@
         <div class="nav-item" data-section="growth">
           <span class="icon">📈</span> Growth
         </div>
+        <div class="nav-item" data-section="analytics">
+          <span class="icon">📊</span> Analytics
+        </div>
         <div class="nav-item" data-section="revenue">
           <span class="icon">💰</span> Revenue
         </div>
@@ -759,6 +762,55 @@
               <div class="mini-chart">
                 <canvas id="chart-philomath_subs"></canvas>
               </div>
+            </div>
+            <div class="metric-card" data-metric="discord_members">
+              <div class="metric-label">Discord Members</div>
+              <div class="metric-value" id="val-discord_members">—</div>
+              <div class="metric-velocity neutral" id="vel-discord_members">
+                No history
+              </div>
+              <div class="metric-source">🔗 Discord API</div>
+              <div class="mini-chart">
+                <canvas id="chart-discord_members"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Programming for Lovers Google Analytics Section -->
+        <div class="section" id="section-analytics">
+          <div class="section-header">
+            <div class="section-title">
+              <div
+                class="icon"
+                style="background: rgba(66, 133, 244, 0.15); color: #4285f4"
+              >
+                📊
+              </div>
+              Programming for Lovers Google Analytics
+            </div>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card" data-metric="ga_active_users">
+              <div class="metric-label">Active Users (7d)</div>
+              <div class="metric-value" id="val-ga_active_users">—</div>
+              <div class="metric-velocity neutral" id="vel-ga_active_users">No history</div>
+              <div class="metric-source">🔗 Google Analytics</div>
+              <div class="mini-chart"><canvas id="chart-ga_active_users"></canvas></div>
+            </div>
+            <div class="metric-card" data-metric="ga_sessions">
+              <div class="metric-label">Sessions (7d)</div>
+              <div class="metric-value" id="val-ga_sessions">—</div>
+              <div class="metric-velocity neutral" id="vel-ga_sessions">No history</div>
+              <div class="metric-source">🔗 Google Analytics</div>
+              <div class="mini-chart"><canvas id="chart-ga_sessions"></canvas></div>
+            </div>
+            <div class="metric-card" data-metric="ga_pageviews">
+              <div class="metric-label">Pageviews (7d)</div>
+              <div class="metric-value" id="val-ga_pageviews">—</div>
+              <div class="metric-velocity neutral" id="vel-ga_pageviews">No history</div>
+              <div class="metric-source">🔗 Google Analytics</div>
+              <div class="mini-chart"><canvas id="chart-ga_pageviews"></canvas></div>
             </div>
           </div>
         </div>
@@ -965,7 +1017,6 @@
                 <canvas id="chart-discord_online"></canvas>
               </div>
             </div>
-
             <div class="metric-card" data-metric="discord_total">
               <div class="metric-label">Total Discord Members</div>
               <div class="metric-value" id="val-discord_total">—</div>
@@ -977,7 +1028,6 @@
                 <canvas id="chart-discord_total"></canvas>
               </div>
             </div>
-
             <div class="metric-card" data-metric="discord_new_7d">
               <div class="metric-label">New Members (7d)</div>
               <div class="metric-value" id="val-discord_new_7d">—</div>
@@ -986,7 +1036,6 @@
               </div>
               <div class="metric-source">🔗 Discord Insights</div>
             </div>
-
             <div class="metric-card" data-metric="discord_messages_7d">
               <div class="metric-label">Messages Sent (7d)</div>
               <div class="metric-value" id="val-discord_messages_7d">—</div>
@@ -995,6 +1044,8 @@
               </div>
               <div class="metric-source">🔗 Discord Insights</div>
             </div>
+
+
 
             <div
               class="metric-card editable"
@@ -1008,7 +1059,6 @@
               </div>
               <div class="metric-source">✏️ Manual</div>
             </div>
-
             <div
               class="metric-card editable"
               data-metric="active_members_7d"
@@ -1022,6 +1072,11 @@
               <div class="metric-source">✏️ Manual</div>
             </div>
           </div>
+        </div>
+
+
+
+        
         </div>
         <!-- Trends Section -->
         <div class="section" id="section-trends" style="display: none">
@@ -1121,6 +1176,39 @@
             </div>
           </div>
 
+          <!-- YouTube Charts -->
+          <div class="trends-group">
+            <h3 class="trends-group-title">🎬 YouTube</h3>
+            <div class="trends-grid">
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Total Views</span>
+                  <span class="trend-current" id="trend-val-yt_views">—</span>
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-yt_views"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-yt_views">—</span>
+                  <span class="trend-period" id="trend-period-yt_views">—</span>
+                </div>
+              </div>
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Watch Time (hrs)</span>
+                  <span class="trend-current" id="trend-val-yt_watch_time">—</span>
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-yt_watch_time"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-yt_watch_time">—</span>
+                  <span class="trend-period" id="trend-period-yt_watch_time">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Revenue Charts -->
           <div class="trends-group">
             <h3 class="trends-group-title">💰 Revenue</h3>
@@ -1162,19 +1250,19 @@
             <div class="trends-grid">
               <div class="trend-card">
                 <div class="trend-header">
-                  <span class="trend-title">Discord Online</span>
-                  <span class="trend-current" id="trend-val-discord_online"
+                  <span class="trend-title">Discord Members</span>
+                  <span class="trend-current" id="trend-val-discord_total"
                     >—</span
                   >
                 </div>
                 <div class="trend-chart">
-                  <canvas id="trend-chart-discord_online"></canvas>
+                  <canvas id="trend-chart-discord_total"></canvas>
                 </div>
                 <div class="trend-footer">
-                  <span class="trend-change" id="trend-change-discord_online"
+                  <span class="trend-change" id="trend-change-discord_total"
                     >—</span
                   >
-                  <span class="trend-period" id="trend-period-discord_online"
+                  <span class="trend-period" id="trend-period-discord_total"
                     >—</span
                   >
                 </div>
@@ -1196,6 +1284,53 @@
                   <span class="trend-period" id="trend-period-live_attendance"
                     >—</span
                   >
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+          <!-- Google Analytics Charts -->
+          <div class="trends-group">
+            <h3 class="trends-group-title">📊 Website Analytics</h3>
+            <div class="trends-grid">
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Active Users (7d)</span>
+                  <span class="trend-current" id="trend-val-ga_active_users">—</span>
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-ga_active_users"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-ga_active_users">—</span>
+                  <span class="trend-period" id="trend-period-ga_active_users">—</span>
+                </div>
+              </div>
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Sessions (7d)</span>
+                  <span class="trend-current" id="trend-val-ga_sessions">—</span>
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-ga_sessions"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-ga_sessions">—</span>
+                  <span class="trend-period" id="trend-period-ga_sessions">—</span>
+                </div>
+              </div>
+              <div class="trend-card">
+                <div class="trend-header">
+                  <span class="trend-title">Pageviews (7d)</span>
+                  <span class="trend-current" id="trend-val-ga_pageviews">—</span>
+                </div>
+                <div class="trend-chart">
+                  <canvas id="trend-chart-ga_pageviews"></canvas>
+                </div>
+                <div class="trend-footer">
+                  <span class="trend-change" id="trend-change-ga_pageviews">—</span>
+                  <span class="trend-period" id="trend-period-ga_pageviews">—</span>
                 </div>
               </div>
             </div>
@@ -1406,6 +1541,9 @@
 
       const METRICS = {
         yt_subs: { label: "YouTube Subs", format: "number", api: "youtube" },
+        yt_subscribers: { label: "Subscribers", format: "number", api: "youtube" },
+        yt_views: { label: "Total Views", format: "number", api: "youtube" },
+        yt_watch_time: { label: "Watch Time (hrs)", format: "number", api: "youtube_analytics" },
         mailchimp_contacts: {
           label: "Mailchimp Contacts",
           format: "number",
@@ -1484,6 +1622,11 @@
           format: "number",
           api: "discord",
         },
+        discord_members: {
+          label: "Discord Members",
+          format: "number",
+          api: "discord",
+        },
         discord_new_7d: {
           label: "New Members (7d)",
           format: "number",
@@ -1493,6 +1636,21 @@
           label: "Messages (7d)",
           format: "number",
           api: "discord",
+        },
+        ga_active_users: {
+          label: "Active Users (7d)",
+          format: "number",
+          api: "analytics",
+        },
+        ga_sessions: {
+          label: "Sessions (7d)",
+          format: "number",
+          api: "analytics",
+        },
+        ga_pageviews: {
+          label: "Pageviews (7d)",
+          format: "number",
+          api: "analytics",
         },
       };
 
@@ -1581,6 +1739,13 @@
         return await response.json();
       }
 
+      async function fetchAnalytics() {
+        const response = await fetch("/api/analytics");
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
+      }
+
       async function saveToSheets(data) {
         await fetch("/api/history", {
           method: "POST",
@@ -1599,16 +1764,18 @@
 
         try {
           // Fetch from APIs
-          const [youtube, mailchimp, memberful, discord] =
-            await Promise.allSettled([
-              fetchYouTube(),
-              fetchMailchimp(),
-              fetchMemberful(),
-              fetchDiscord(),
-            ]);
+          const [youtube, mailchimp, memberful, discord, analytics] = await Promise.allSettled([
+            fetchYouTube(),
+            fetchMailchimp(),
+            fetchMemberful(),
+            fetchDiscord(),
+            fetchAnalytics(),
+          ]);
 
           if (youtube.status === "fulfilled" && youtube.value) {
             state.currentData.yt_subs = youtube.value.current;
+            state.currentData.yt_subscribers = youtube.value.subscribers;
+            state.currentData.yt_views = youtube.value.views;
             updateConnectionStatus("youtube", "connected");
           }
 
@@ -1627,11 +1794,18 @@
           if (discord.status === "fulfilled" && discord.value) {
             state.currentData.discord_online = discord.value.online;
             state.currentData.discord_total = discord.value.total_members;
+            state.currentData.discord_members = discord.value.total_members;
             state.currentData.discord_new_7d = discord.value.new_members_7d;
             state.currentData.discord_messages_7d = discord.value.messages_7d;
             state.currentData.active_members_7d =
               discord.value.active_members_7d;
             updateConnectionStatus("discord", "connected");
+          }
+
+          if (analytics.status === "fulfilled" && analytics.value) {
+            state.currentData.ga_active_users = analytics.value.active_users_7d;
+            state.currentData.ga_sessions = analytics.value.sessions_7d;
+            state.currentData.ga_pageviews = analytics.value.pageviews_7d;
           }
 
           // Calculate derived metrics
@@ -1972,12 +2146,17 @@
 
       const TREND_METRICS = [
         "yt_subs",
+        "yt_views",
+        "yt_watch_time",
         "mailchimp_contacts",
         "philomath_subs",
         "mrr",
         "arpu",
-        "discord_online",
+        "discord_total", 
         "live_attendance",
+        "ga_active_users",
+        "ga_sessions",
+        "ga_pageviews"
       ];
 
       // Time range tabs
@@ -2188,6 +2367,9 @@
       // INIT
       // =========================================================================
       refreshData();
+
+      // Auto-refresh every 30 minutes
+      setInterval(refreshData, 30 * 60 * 1000);
     </script>
   </body>
 </html>
