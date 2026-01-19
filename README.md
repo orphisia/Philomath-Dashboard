@@ -16,6 +16,9 @@ Storage: JSON file-based history.
 Deployment: Replit-ready, portable to any Node.js host.   
 
 
+<img src="philo_screenshot.png" alt="Screenshot" width="400"/>
+
+
 ## Features 
 Secure API key management via environment variables.   
 Automatic data refresh (30-min intervals).   
