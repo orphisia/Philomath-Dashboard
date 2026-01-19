@@ -22,7 +22,9 @@ Automatic data refresh (30-min intervals)
 Manual snapshot saving for historical tracking
 Zero-config deployment on Replit
 
-(Disclosure: semi-coded with Claude)
+
+### AI Use Disclosure
+Claude-assisted development
 
 
 
