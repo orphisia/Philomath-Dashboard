@@ -16,7 +16,7 @@ Storage: JSON file-based history.
 Deployment: Replit-ready, portable to any Node.js host.   
 
 
-<img src="philo_screenshot.png" alt="Screenshot" width="550"/>
+<img src="philo_screenshot.png" alt="Screenshot" width="770"/>
 
 
 ## Features 
