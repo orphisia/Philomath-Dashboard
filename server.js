@@ -31,11 +31,20 @@ const DATA_FILE = path.join(__dirname, "data", "history.json");
 // YouTube API
 app.get("/api/youtube", async (req, res) => {
   try {
+    const apiKey = process.env.GOOGLE_API_KEY || process.env.YOUTUBE_API_KEY;
+    const channelId = process.env.YOUTUBE_CHANNEL_ID;
+    
+    if (!apiKey || !channelId) {
+      throw new Error("Missing YouTube API Key or Channel ID");
+    }
+
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${process.env.YOUTUBE_CHANNEL_ID}&key=${process.env.GOOGLE_API_KEY}`,
+      `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`,
     );
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
+    if (!data.items || data.items.length === 0) throw new Error("Channel not found");
+    
     const stats = data.items[0].statistics;
     res.json({
       current: parseInt(stats.subscriberCount),
@@ -44,6 +53,7 @@ app.get("/api/youtube", async (req, res) => {
       videos: parseInt(stats.videoCount),
     });
   } catch (error) {
+    console.error("YouTube API error:", error);
     res.status(500).json({ error: error.message });
   }
 });
